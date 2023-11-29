@@ -1,0 +1,6 @@
+name: transit-gateway-egress-routing
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: A minimal AWS Python Pulumi program
