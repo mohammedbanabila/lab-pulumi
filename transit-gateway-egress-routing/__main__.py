@@ -36,6 +36,7 @@ sudo apt upgrade -y
 # create  transit gateway 
 tgw1conn1=aws.ec2transitgateway.TransitGateway(
   "tgw1conn1",
+   aws.ec2transitgateway.TransitGatewayArgs(
    default_route_table_association="disable",
    default_route_table_propagation="disable",
    multicast_support="disable",
@@ -46,22 +47,27 @@ tgw1conn1=aws.ec2transitgateway.TransitGateway(
    tags={
     "Name" :"tgw1conn1"
    }
+   )
 )
 #  create  vpc1 hub 
 vpc1=aws.ec2.Vpc(
     "vpc1",
+    aws.ec2.VpcArgs(
      cidr_block=networks1["hubblock"],
      tags={
          "Name" :  "vpc1"
      },
 )
+)
 
 intgw1=aws.ec2.InternetGateway(
     "intgw1",
+    aws.ec2.InternetGatewayArgs(
     vpc_id=vpc1.id,
     tags={
         "Name" : "intgw1"
     }
+    )
 )
 
 public1subnet1=aws.ec2.Subnet(
@@ -77,6 +83,7 @@ public1subnet1=aws.ec2.Subnet(
 
 public1subnet2=aws.ec2.Subnet(
     "public1subnet2",
+    aws.ec2.SubnetArgs(
     vpc_id=vpc1.id,
     cidr_block=networks1["hub1b"],
     availability_zone=networks1["zone1b"],
@@ -84,30 +91,38 @@ public1subnet2=aws.ec2.Subnet(
     tags={
         "Name" :  "public1subnet2"
     }
+    )
 )
 
 tgw1subnet1=aws.ec2.Subnet(
     "tgw1subnet1",
+        aws.ec2.SubnetArgs(
+
     vpc_id=vpc1.id,
     cidr_block=networks1["hub1c"],
     availability_zone=networks1["zone1a"],
     tags={
         "Name" : "tgw1subnet1",
   }
+        )
 )
 
 tgw2subnet1=aws.ec2.Subnet(
     "tgw2subnet1",
+        aws.ec2.SubnetArgs(
+
     vpc_id=vpc1.id,
     cidr_block=networks1["hub1d"],
     availability_zone=networks1["zone1b"],
     tags={
         "Name" : "tgw2subnet1",
   }
+        )
 )
 
 table1=aws.ec2.RouteTable(
    "table1",
+   aws.ec2.RouteTableArgs(
    vpc_id=vpc1.id,
    routes=[
        aws.ec2.RouteTableRouteArgs(
@@ -122,58 +137,74 @@ table1=aws.ec2.RouteTable(
    tags={
        "Name" : "table1"
    },
+   )
   
 )
 
 hublink1a=aws.ec2.RouteTableAssociation(
     "hublink1a",
+    aws.ec2.RouteTableAssociationArgs(
     subnet_id=public1subnet1.id,
     route_table_id=table1.id
+    )
 )
 hublink1b=aws.ec2.RouteTableAssociation(
     "hublink1b",
+    aws.ec2.RouteTableAssociationArgs(
     subnet_id=public1subnet2.id,
     route_table_id=table1.id
+    )
 )
 
 eip1a=aws.ec2.Eip(
     "eip1a",
+    aws.ec2.EipArgs(
     domain="vpc",
     tags={
         'Name' :  "eip1a"
     }
+    )
 )
 
 eip1b=aws.ec2.Eip(
     "eip1b",
+        aws.ec2.EipArgs(
+
     domain="vpc",
     tags={
         'Name' :  "eip1b"
     }
+        )
 )
 
 nat1a=aws.ec2.NatGateway(
   "nat1a",
+  aws.ec2.NatGatewayArgs(
   allocation_id=eip1a.allocation_id,
   subnet_id=public1subnet1.id,
   connectivity_type="public",
   tags={
       "Name"  : "nat1a"
   }
+  )
 )
 
 nat1b=aws.ec2.NatGateway(
   "nat1b",
+  aws.ec2.NatGatewayArgs(
+
   allocation_id=eip1b.allocation_id,
   subnet_id=public1subnet2.id,
   connectivity_type="public",
   tags={
       "Name"  : "nat1b"
   }
+  )
 )
 
 nacls1=aws.ec2.NetworkAcl(
     "nacls1",
+    aws.ec2.NetworkAclArgs(
     vpc_id=vpc1.id,
     ingress=[
         aws.ec2.NetworkAclIngressArgs(
@@ -343,20 +374,27 @@ nacls1=aws.ec2.NetworkAcl(
     tags={
         "Name" :  "nacls1"
     }
+    )
 )
 hub1nacls1link1=aws.ec2.NetworkAclAssociation(
     "hub1nacls1link1",
+    aws.ec2.NetworkAclAssociationArgs(
     subnet_id=public1subnet1.id,
     network_acl_id=nacls1.id
+    )
 )
 hub1nacls1link2=aws.ec2.NetworkAclAssociation(
     "hub1nacls1link2",
+    aws.ec2.NetworkAclAssociationArgs(
     subnet_id=public1subnet2.id,
     network_acl_id=nacls1.id
+    )
 )
 
 nacls2=aws.ec2.NetworkAcl(
     "nacls2",
+    aws.ec2.NetworkAclArgs(
+
     vpc_id=vpc1.id,
     ingress=[
       aws.ec2.NetworkAclIngressArgs(
@@ -525,20 +563,28 @@ nacls2=aws.ec2.NetworkAcl(
     tags={
         "Name" :  "nacls2"
     }
+    )
 )
 nacls2link1=aws.ec2.NetworkAclAssociation(
     "nacls2link1",
+        aws.ec2.NetworkAclAssociationArgs(
+
     subnet_id=tgw1subnet1.id,
     network_acl_id=nacls2.id
+        )
 )
 nacls2link2=aws.ec2.NetworkAclAssociation(
     "nacls2link2",
+        aws.ec2.NetworkAclAssociationArgs(
+
     subnet_id=tgw2subnet1.id,
     network_acl_id=nacls2.id
+        )
 )
 
 security1grp1=aws.ec2.SecurityGroup(
      "security1grp1",
+     aws.ec2.SecurityGroupArgs(
      vpc_id=vpc1.id,
      name="hub1secure1",
      ingress=[
@@ -578,11 +624,13 @@ security1grp1=aws.ec2.SecurityGroup(
      tags={
          "Name" : "security1grp1"
      }
+     )
 )
 
 
 table2a=aws.ec2.RouteTable(
   "table2a",
+  aws.ec2.RouteTableArgs(
   vpc_id=vpc1.id,
   routes=[
     aws.ec2.RouteTableRouteArgs(
@@ -593,16 +641,20 @@ table2a=aws.ec2.RouteTable(
   tags={
       "Name": "table2a"
   }
+  )
 )
 
 link2a=aws.ec2.RouteTableAssociation(
     "link2a",
+    aws.ec2.RouteTableAssociationArgs(
     subnet_id=tgw1subnet1.id,
     route_table_id=table2a.id
+    )
 )
 
 table2b=aws.ec2.RouteTable(
   "table2b",
+  aws.ec2.RouteTableArgs(
   vpc_id=vpc1.id,
   routes=[
        aws.ec2.RouteTableRouteArgs(
@@ -613,16 +665,20 @@ table2b=aws.ec2.RouteTable(
   tags={
       "Name": "table2b"
   }
+  )
 )
  
 link2b=aws.ec2.RouteTableAssociation(
     "link2b",
+    aws.ec2.RouteTableAssociationArgs(
     subnet_id=tgw2subnet1.id,
     route_table_id=table2b.id
+    )
 )
 
 instance1=aws.ec2.Instance(
   "instance1",
+  aws.ec2.InstanceArgs(
   ami=insttools["instami"],
   instance_type=insttools["instancetypes"],
   key_name=insttools["keys1"],
@@ -642,10 +698,12 @@ instance1=aws.ec2.Instance(
   },
   subnet_id=public1subnet1.id,
   availability_zone=networks1["zone1a"]
+  )
 )
 
 instance2=aws.ec2.Instance(
   "instance2",
+  aws.ec2.InstanceArgs(
   ami=insttools["instami"],
   instance_type=insttools["instancetypes"],
   key_name=insttools["keys1"],
@@ -665,39 +723,47 @@ instance2=aws.ec2.Instance(
   },
   subnet_id=public1subnet2.id,
   availability_zone=networks1["zone1b"]
+  )
 )
 
 # for spoke2 vpc2
 
 vpc2=aws.ec2.Vpc(
     "vpc2",
+    aws.ec2.VpcArgs(
      cidr_block=networks1["spoke1block1"],
      tags={
          "Name" : "vpc2"
      },
+    )
 )
 
 inst1subnet2=aws.ec2.Subnet(
     "inst1subnet2",
+    aws.ec2.SubnetArgs(
     vpc_id=vpc2.id,
     cidr_block=networks1["spoke1c"],
     availability_zone=networks1["zone1a"],
     tags={
         "Name" : "inst1subnet2",
   }
+    )
 )
 
 inst2subnet2=aws.ec2.Subnet(
     "inst2subnet2",
+    aws.ec2.SubnetArgs(
     vpc_id=vpc2.id,
     cidr_block=networks1["spoke1d"],
     availability_zone=networks1["zone1b"],
     tags={
         "Name" : "inst2subnet2",
   }
+    )
 )
 nacls2spoke1=aws.ec2.NetworkAcl(
     "nacls2spoke1",
+    aws.ec2.NetworkAclArgs(
     vpc_id=vpc2.id,
       ingress=[
           aws.ec2.NetworkAclIngressArgs(
@@ -866,20 +932,26 @@ nacls2spoke1=aws.ec2.NetworkAcl(
     tags={
         "Name" :  "nacls2spoke1"
     }
+    )
 )
 inst1spoke1link1=aws.ec2.NetworkAclAssociation(
     "inst1spoke1link1",
+    aws.ec2.RouteTableAssociationArgs(
     subnet_id=inst1subnet2.id,
     network_acl_id=nacls2spoke1.id
+    )
 )
 inst2spoke1link2=aws.ec2.NetworkAclAssociation(
     "inst2spoke1link2",
+    aws.ec2.RouteTableAssociationArgs(
     subnet_id=inst2subnet2.id,
     network_acl_id=nacls2spoke1.id
+    )
 )
 
 security1grp2=aws.ec2.SecurityGroup(
      "security1grp2",
+     aws.ec2.SecurityGroupArgs(
      vpc_id=vpc2.id,
      name="spoke1secure2",
      ingress=[
@@ -919,10 +991,12 @@ security1grp2=aws.ec2.SecurityGroup(
      tags={
          "Name" : "security1grp2"
      }
+     )
 )
 
 spoke2instance1=aws.ec2.Instance(
   "spoke2instance1",
+  aws.ec2.InstanceArgs(
   ami=insttools["instami"],
   instance_type=insttools["instancetypes"],
   key_name=insttools["keys2"],
@@ -942,10 +1016,12 @@ spoke2instance1=aws.ec2.Instance(
   },
   subnet_id=inst1subnet2.id,
   availability_zone=networks1["zone1a"]
+  )
 )
 
 spoke2instance2=aws.ec2.Instance(
   "spoke2instance2",
+  aws.ec2.InstanceArgs(
   ami=insttools["instami"],
   instance_type=insttools["instancetypes"],
   key_name=insttools["keys2"],
@@ -965,40 +1041,48 @@ spoke2instance2=aws.ec2.Instance(
   },
   subnet_id=inst2subnet2.id,
   availability_zone=networks1["zone1b"]
+  )
 )
 
 # for spoke3 vpc3
 
 vpc3=aws.ec2.Vpc(
     "vpc3",
+    aws.ec2.VpcArgs(
      cidr_block=networks1["spoke2block2"],
      tags={
          "Name" :  "vpc3"
      },
+    )
 )
 
 inst1subnet3=aws.ec2.Subnet(
     "inst1subnet3",
+    aws.ec2.SubnetArgs(
     vpc_id=vpc3.id,
     cidr_block=networks1["spoke2c"],
     availability_zone=networks1["zone1a"],
     tags={
         "Name" : "inst1subnet3",
   }
+    )
 )
 
 inst2subnet3=aws.ec2.Subnet(
     "inst2subnet3",
+    aws.ec2.SubnetArgs(
     vpc_id=vpc3.id,
     cidr_block=networks1["spoke2d"],
     availability_zone=networks1["zone1b"],
     tags={
         "Name" : "inst2subnet3",
   }
+    )
 )
 
 nacls4spoke3=aws.ec2.NetworkAcl(
     "nacls4spoke3",
+    aws.ec2.NetworkAclArgs(
     vpc_id=vpc3.id,
         ingress=[
           aws.ec2.NetworkAclIngressArgs(
@@ -1169,20 +1253,26 @@ nacls4spoke3=aws.ec2.NetworkAcl(
     tags={
         "Name" :  "nacls4spoke3"
     }
+    )
 )
 nacls4link1=aws.ec2.NetworkAclAssociation(
     "nacls4link1",
+    aws.ec2.NetworkAclAssociationArgs(
     subnet_id=inst1subnet3.id,
     network_acl_id=nacls4spoke3.id
+    )
 )
 nacls4link2=aws.ec2.NetworkAclAssociation(
     "nacls4link2",
+    aws.ec2.NetworkAclAssociationArgs(
     subnet_id=inst2subnet3.id,
     network_acl_id=nacls4spoke3.id
+    )
 )
 
 security1grp3=aws.ec2.SecurityGroup(
      "security1grp3",
+     aws.ec2.SecurityGroupArgs(
      vpc_id=vpc3.id,
      name="spoke3secure3",
        ingress=[
@@ -1222,10 +1312,12 @@ security1grp3=aws.ec2.SecurityGroup(
      tags={
          "Name" : "security1grp3"
      }
+     )
 )
 
 spoke3instance1=aws.ec2.Instance(
   "spoke3instance1",
+  aws.ec2.InstanceArgs(
   ami=insttools["instami"],
   instance_type=insttools["instancetypes"],
   key_name=insttools["keys2"],
@@ -1245,10 +1337,12 @@ spoke3instance1=aws.ec2.Instance(
   },
   subnet_id=inst1subnet3.id,
   availability_zone=networks1["zone1a"]
+  )
 )
 
 spoke3instance2=aws.ec2.Instance(
   "spoke3instance2",
+  aws.ec2.InstanceArgs(
   ami=insttools["instami"],
   instance_type=insttools["instancetypes"],
   key_name=insttools["keys2"],
@@ -1268,12 +1362,14 @@ spoke3instance2=aws.ec2.Instance(
   },
   subnet_id=inst2subnet3.id,
   availability_zone=networks1["zone1b"]
+  )
 )
 
 #  transit gateway attachment hub , spoke2 , spoke3 
 
 vpc1attach1=aws.ec2transitgateway.VpcAttachment(
  "vpc1attach1",
+ aws.ec2transitgateway.VpcAttachmentArgs(
  subnet_ids=[tgw1subnet1.id , tgw2subnet1.id],
  vpc_id=vpc1.id,
  appliance_mode_support="enable",
@@ -1285,11 +1381,13 @@ vpc1attach1=aws.ec2transitgateway.VpcAttachment(
      "Name" :  "vpc1attach1"
  },
   dns_support="enable"
+ )
 
 )
 
 vpc2attach2=aws.ec2transitgateway.VpcAttachment(
  "vpc2attach2",
+ aws.ec2transitgateway.VpcAttachmentArgs(
  subnet_ids=[inst1subnet2.id,inst2subnet2.id],
  vpc_id=vpc2.id,
  appliance_mode_support="enable",
@@ -1301,10 +1399,12 @@ vpc2attach2=aws.ec2transitgateway.VpcAttachment(
      "Name" :  "vpc2attach2"
  },
   dns_support="enable"
+ )
 
 ) 
 vpc3attach3=aws.ec2transitgateway.VpcAttachment(
  "vpc3attach3",
+ aws.ec2transitgateway.VpcAttachmentArgs(
  subnet_ids=[inst1subnet3.id,inst2subnet3.id],
  vpc_id=vpc3.id,
  appliance_mode_support="enable",
@@ -1316,88 +1416,116 @@ vpc3attach3=aws.ec2transitgateway.VpcAttachment(
      "Name" :  "vpc3attach3"
  },
  dns_support="enable"
+ )
 )
 
 tgw1routetable1=aws.ec2transitgateway.RouteTable(
     "tgw1routetable1",
+    aws.ec2transitgateway.RouteTableArgs(
      transit_gateway_id=tgw1conn1.id,
      tags={
          "Name" :  "tgw1routetable1"
      }
+    )
 )
 
 tgw1route1=aws.ec2transitgateway.Route(
     "tgw1route1",
+    aws.ec2transitgateway.RouteArgs(
      transit_gateway_attachment_id=vpc1attach1.id,
      transit_gateway_route_table_id=tgw1routetable1.id,
      destination_cidr_block=networks1["traffic_ipv4_any"]
+    )
 )
 tgw1route2=aws.ec2transitgateway.Route(
     "tgw1route2",
+        aws.ec2transitgateway.RouteArgs(
+
      transit_gateway_route_table_id=tgw1routetable1.id,
      destination_cidr_block=networks1["rangeblock"],
      blackhole=True
+        )
 )
 
 
 tgw1link1=aws.ec2transitgateway.RouteTableAssociation(
     "tgw1link1",
+    aws.ec2transitgateway.RouteTableAssociationArgs(
     transit_gateway_attachment_id=vpc2attach2.id,
     transit_gateway_route_table_id=tgw1routetable1.id
+    )
 )
 tgw1link2=aws.ec2transitgateway.RouteTableAssociation(
     "tgw1link2",
+        aws.ec2transitgateway.RouteTableAssociationArgs(
+
     transit_gateway_attachment_id=vpc3attach3.id,
     transit_gateway_route_table_id=tgw1routetable1.id
+        )
 )
 tgw1prp1=aws.ec2transitgateway.RouteTablePropagation(
     "tgw1prp1",
+    aws.ec2transitgateway.RouteTablePropagationArgs(
     transit_gateway_attachment_id=vpc1attach1.id,
     transit_gateway_route_table_id=tgw1routetable1.id
+    )
 )
 
 
 tgw2routetable2=aws.ec2transitgateway.RouteTable(
     "tgw2routetable2",
+    aws.ec2transitgateway.RouteTableArgs(
      transit_gateway_id=tgw1conn1.id,
      tags={
          "Name" :  "tgw2routetable2"
      }
+    )
 )
 
 
 tgw2route1=aws.ec2transitgateway.Route(
     "tgw2route1",
+    aws.ec2transitgateway.RouteArgs(
      transit_gateway_attachment_id=vpc2attach2.id,
      transit_gateway_route_table_id=tgw2routetable2.id,
      destination_cidr_block=networks1["spoke1block1"]
+    )
 )
 tgw2route2=aws.ec2transitgateway.Route(
     "tgw2route2",
+    aws.ec2transitgateway.RouteArgs(
     transit_gateway_attachment_id=vpc3attach3.id,
     transit_gateway_route_table_id=tgw2routetable2.id,
     destination_cidr_block=networks1["spoke2block2"]
+    )
 )
 
 tgw2link1=aws.ec2transitgateway.RouteTableAssociation(
     "tgw2link1",
+    aws.ec2transitgateway.RouteTableAssociationArgs(
     transit_gateway_attachment_id=vpc1attach1.id,
     transit_gateway_route_table_id=tgw2routetable2.id
+    )
 )
 tgw2prp1=aws.ec2transitgateway.RouteTablePropagation(
     "tgw2prp1",
+    aws.ec2transitgateway.RouteTablePropagationArgs(
     transit_gateway_attachment_id=vpc2attach2.id,
     transit_gateway_route_table_id=tgw2routetable2.id
+    )
 )
 
 tgw2prp2=aws.ec2transitgateway.RouteTablePropagation(
     "tgw2prp2",
+    aws.ec2transitgateway.RouteTablePropagationArgs(
     transit_gateway_attachment_id=vpc3attach3.id,
     transit_gateway_route_table_id=tgw2routetable2.id
+    )
 )
 
 routetable_spoke2=aws.ec2.RouteTable(
     "routetable_spoke2",
+    aws.ec2.RouteTableArgs(
     vpc_id=vpc2.id,
     routes=[
         aws.ec2.RouteTableRouteArgs(
@@ -1408,10 +1536,12 @@ routetable_spoke2=aws.ec2.RouteTable(
     tags={
         "Name" :  "routetable_spoke2"
     }
+    )
 )
 
 routetable_spoke3=aws.ec2.RouteTable(
    "routetable_spoke3",
+   aws.ec2.RouteTableArgs(
     vpc_id=vpc3.id,
     routes=[
         aws.ec2.RouteTableRouteArgs(
@@ -1422,31 +1552,40 @@ routetable_spoke3=aws.ec2.RouteTable(
     tags={
         "Name" :  "routetable_spoke3"
     }
+   )
 )
 
 spoke1link2a=aws.ec2.RouteTableAssociation(
     "spoke1link2a",
+    aws.ec2.RouteTableAssociationArgs(
     subnet_id=inst1subnet2.id,
     route_table_id=routetable_spoke2.id
+    )
 )
 
 
 spoke1link2b=aws.ec2.RouteTableAssociation(
     "spoke1link2b",
+    aws.ec2.RouteTableAssociationArgs(
     subnet_id=inst2subnet2.id,
     route_table_id=routetable_spoke2.id
+    )
 )
 
 spoke3link3a=aws.ec2.RouteTableAssociation(
     "spoke3link3a",
+    aws.ec2.RouteTableAssociationArgs(
     subnet_id=inst1subnet3.id,
     route_table_id=routetable_spoke3.id
+    )
 )
 
 spoke3link3b=aws.ec2.RouteTableAssociation(
     "spoke3link3b",
+    aws.ec2.RouteTableAssociationArgs(
     subnet_id=inst2subnet3.id,
     route_table_id=routetable_spoke3.id
+    )
 )
 
 
@@ -1457,30 +1596,39 @@ myservices={
 
 hublogs=aws.cloudwatch.LogGroup(
     "hublogs",
+    aws.cloudwatch.LogGroupArgs(
     name="hubgrps",
     tags={
         "Name" :  "hublogs"
     }
+    )
 )
 
 spoke2logs=aws.cloudwatch.LogGroup(
     "spoke2logs",
+    aws.cloudwatch.LogGroupArgs(
+
     name="spoke2grps",
     tags={
         "Name" :  "spoke2logs"
     }
+    )
 )
 
 spoke3logs=aws.cloudwatch.LogGroup(
     "spoke3logs",
+        aws.cloudwatch.LogGroupArgs(
+
     name="spoke3grps",
     tags={
         "Name" :  "spoke3logs"
     }
+        )
 )
 
 flowrole=aws.iam.Role(
   "flowrole",
+  aws.iam.RoleArgs(
   name="flowauth",
   assume_role_policy=json.dumps({
       
@@ -1493,10 +1641,12 @@ flowrole=aws.iam.Role(
           }
      }]
   })
+  )
 )
 
 logspolicy=aws.iam.Policy(
     "logspolicy",
+    aws.iam.PolicyArgs(
     policy=json.dumps({
       "Version" :  "2012-10-17",
       "Statement" :[{
@@ -1508,21 +1658,25 @@ logspolicy=aws.iam.Policy(
              "logs:GetLogEvents",
              "logs:PutLogEvents"
            ],
-          "Resource":["arn:aws:logs:us-east-1:11733726600:log-group:hubgrps:*",
-                "arn:aws:logs:us-east-1:11733726600:log-group:spoke2grps:*", 
-                "arn:aws:logs:us-east-1:11733726600:log-group:spoke3grps:*" ],
+          "Resource":["arn:aws:logs:us-east-1:11733766600:log-group:hubgrps:*",
+                "arn:aws:logs:us-east-1:11733766600:log-group:spoke2grps:*", 
+                "arn:aws:logs:us-east-1:11733766600:log-group:spoke3grps:*" ],
       }]
     })
+    )
 )
 
 attach1logs=aws.iam.RolePolicyAttachment(
     "attach1logs",
+    aws.iam.RolePolicyAttachmentArgs(
     role=flowrole.name,
     policy_arn=logspolicy.arn
+    )
 )
 
 hubflow=aws.ec2.FlowLog(
   "hubflow",
+  aws.ec2.FlowLogArgs(
   vpc_id=vpc1.id,
   log_destination_type="cloud-watch-logs",
   log_destination=hublogs.arn,
@@ -1531,10 +1685,12 @@ hubflow=aws.ec2.FlowLog(
       "Name": "hubflow"
   },
   iam_role_arn=flowrole.arn
+  )
 )
 
 spoke2flow=aws.ec2.FlowLog(
   "spoke2flow",
+  aws.ec2.FlowLogArgs(
   vpc_id=vpc2.id,
   log_destination_type="cloud-watch-logs",
   log_destination=spoke2logs.arn,
@@ -1543,10 +1699,12 @@ spoke2flow=aws.ec2.FlowLog(
       "Name": "spoke2flow"
   },
   iam_role_arn=flowrole.arn
+  )
 )
 
 spoke3flow3=aws.ec2.FlowLog(
   "spke3flow3",
+  aws.ec2.FlowLogArgs(
   vpc_id=vpc3.id,
   log_destination_type="cloud-watch-logs",
   log_destination=spoke3logs.arn,
@@ -1555,6 +1713,7 @@ spoke3flow3=aws.ec2.FlowLog(
       "Name": "spoke3flow3"
   },
   iam_role_arn=flowrole.arn
+  )
 )
 
 
